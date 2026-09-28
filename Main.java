@@ -1,32 +1,90 @@
+import java.util.Scanner;
+
 public class Main {
 
     public static void main(String[] args) {
 
+        Scanner scanner = new Scanner(System.in);
         Broker broker = new Broker();
 
-        // Messages with different chances of succeeding
-        broker.addMessage(
-                new Message("MSG-001", "Process payment", 90)
-        );
+        boolean running = true;
 
-        broker.addMessage(
-                new Message("MSG-002", "Send email", 50)
-        );
+        while (running) {
 
-        broker.addMessage(
-                new Message("MSG-003", "Update database", 20)
-        );
+            System.out.println("\n=== Reliable Message Broker ===");
+            System.out.println("1. Enqueue New Message");
+            System.out.println("2. Process Current Batch");
+            System.out.println("3. View and Clear DLQ");
+            System.out.println("4. Exit");
+            System.out.print("Choose an option: ");
 
-        broker.addMessage(
-                new Message("MSG-004", "Poison message", 0)
-        );
+            String choice = scanner.nextLine();
 
-        System.out.println("Starting queue size: "
-                + broker.getQueueSize());
+            switch (choice) {
 
-        broker.processBatch();
+                case "1":
+                    System.out.print("Enter Message ID: ");
+                    String messageId = scanner.nextLine();
 
-        System.out.println("\nMessages remaining after batch: "
-                + broker.getQueueSize());
+                    System.out.print("Enter Payload: ");
+                    String payload = scanner.nextLine();
+
+                    int successChance;
+
+                    while (true) {
+                        try {
+                            System.out.print(
+                                    "Enter Success Chance (0-100): "
+                            );
+
+                            successChance =
+                                    Integer.parseInt(scanner.nextLine());
+
+                            if (successChance >= 0 &&
+                                    successChance <= 100) {
+                                break;
+                            }
+
+                            System.out.println(
+                                    "Success chance must be between 0 and 100."
+                            );
+
+                        } catch (NumberFormatException e) {
+                            System.out.println(
+                                    "Please enter a valid number."
+                            );
+                        }
+                    }
+
+                    Message message = new Message(
+                            messageId,
+                            payload,
+                            successChance
+                    );
+
+                    broker.addMessage(message);
+                    break;
+
+                case "2":
+                    broker.processBatch();
+                    break;
+
+                case "3":
+                    broker.viewAndClearDLQ();
+                    break;
+
+                case "4":
+                    running = false;
+                    System.out.println("Exiting broker...");
+                    break;
+
+                default:
+                    System.out.println(
+                            "Invalid option. Please choose 1-4."
+                    );
+            }
+        }
+
+        scanner.close();
     }
-}
+}4

@@ -2,27 +2,31 @@ public class Main {
 
     public static void main(String[] args) {
 
-        QueueInterface<Message> queue = new LinkedQueue<>();
+        Broker broker = new Broker();
 
-        try {
-            // Enqueue three messages
-            queue.enqueue(new Message("MSG-001", "First message"));
-            queue.enqueue(new Message("MSG-002", "Second message"));
-            queue.enqueue(new Message("MSG-003", "Third message"));
+        // Messages with different chances of succeeding
+        broker.addMessage(
+                new Message("MSG-001", "Process payment", 90)
+        );
 
-            System.out.println("Messages added to queue.");
-            System.out.println();
+        broker.addMessage(
+                new Message("MSG-002", "Send email", 50)
+        );
 
-            // Dequeue messages to verify FIFO order
-            System.out.println("Dequeuing messages:");
+        broker.addMessage(
+                new Message("MSG-003", "Update database", 20)
+        );
 
-            while (!queue.isEmpty()) {
-                Message message = queue.dequeue();
-                System.out.println(message);
-            }
+        broker.addMessage(
+                new Message("MSG-004", "Poison message", 0)
+        );
 
-        } catch (QueueOverflowException | QueueUnderflowException e) {
-            System.out.println("Queue error: " + e.getMessage());
-        }
+        System.out.println("Starting queue size: "
+                + broker.getQueueSize());
+
+        broker.processBatch();
+
+        System.out.println("\nMessages remaining after batch: "
+                + broker.getQueueSize());
     }
 }
